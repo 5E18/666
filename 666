@@ -1,0 +1,96 @@
+program Enhancer;
+
+uses
+  SysUtils;
+
+function CountWords(const inputStr: string): Integer;
+var
+  words: TStringArray;
+  word: string;
+begin
+  words := inputStr.Split([' ', '.', '?', '!', ';', ':']);
+  Result := 0;
+
+  for word in words do
+  begin
+    if word <> '' then
+      Inc(Result);
+  end;
+end;
+
+function CountSentences(const inputStr: string): Integer;
+var
+  sentences: TStringArray;
+  sentence: string;
+begin
+  sentences := inputStr.Split(['.', '?', '!', ';', ':']);
+  Result := 0;
+
+  for sentence in sentences do
+  begin
+    if sentence.Trim <> '' then
+      Inc(Result);
+  end;
+end;
+
+function IsVerbInPastTense(const verb: string): Boolean;
+begin
+  Result := (Length(verb) >= 2) and (Copy(verb, Length(verb) - 1, 2) = 'ed');
+end;
+
+procedure CheckPastTenseErrors(const sentence: string);
+var
+  words: TStringArray;
+  word: string;
+
+  function ContainsKeywords(const keywords: array of string; const sentence: string): Boolean;
+  var
+    keyword: string;
+  begin
+    Result := False;
+    for keyword in keywords do
+    begin
+      if Pos(keyword, sentence) > 0 then
+      begin
+        Result := True;
+        Break;
+      end;
+    end;
+  end;
+
+begin
+  keyword: string;
+  words := sentence.Split([' ', '.', ',', '?', '!', ';', ':']);
+
+  // Keywords to check for
+  const
+    keyword: array[0..2] of string = ('Yesterday', 'Recently', 'Last week');
+
+  if ContainsKeywords(Keywords, sentence) then
+  begin
+    for word in words do
+    begin
+      if IsVerbInPastTense(word) then
+        Writeln('Possible past tense error: "', word, '". Please check it!');
+    end;
+  end;
+end;
+
+procedure Enhance;
+var
+  inputStr: string;
+  MyTime: TDateTime;
+begin
+  Write('Input a sentence: ');
+  Readln(inputStr);
+  MyTime := Now;
+  Writeln('Number of words:', CountWords(inputStr));
+  Writeln('Number of sentences:', CountSentences(inputStr));
+  CheckPastTenseErrors(inputStr);
+  Writeln('The Checking time is: ' + FormatDateTime('yyyy-mm-dd hh:nn', MyTime));
+end;
+
+begin
+  Enhance;
+  Readln;
+end. 
