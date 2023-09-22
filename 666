@@ -1,8 +1,14 @@
 program Enhancer;
 
 uses
-  SysUtils;
+  SysUtils, Types;
 
+//global variable
+const
+  Keywords: array[0..4] of string = ('Yesterday', 'recently', 'last week', 'last day', 'last month');
+
+
+//counting the words
 function CountWords(const inputStr: string): Integer;
 var
   words: TStringArray;
@@ -18,6 +24,9 @@ begin
   end;
 end;
 
+
+
+//Counting the No. of sentence
 function CountSentences(const inputStr: string): Integer;
 var
   sentences: TStringArray;
@@ -33,46 +42,52 @@ begin
   end;
 end;
 
+
+
+//Array of 'ed' verb
 function IsVerbInPastTense(const verb: string): Boolean;
 begin
   Result := (Length(verb) >= 2) and (Copy(verb, Length(verb) - 1, 2) = 'ed');
 end;
 
+function ContainsKeywords(const sentence: string): Boolean;
+var
+  keyword: string;
+begin
+  Result := False;
+  for keyword in Keywords do
+  begin
+    if Pos(keyword, sentence) > 0 then
+    begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+
+
+
+//replacement of common words
+function FindAndSuggestReplace(const inputStr: string): string;
+begin
+  Result := StringReplace(inputStr, 'important', 'crucial', [rfIgnoreCase]);
+  Result := StringReplace(Result, 'happy', 'cheerful', [rfIgnoreCase]);
+  Result := StringReplace(Result, 'useful', 'functional', [rfIgnoreCase]);
+end;
+
+
+
 procedure CheckPastTenseErrors(const sentence: string);
 var
   words: TStringArray;
   word: string;
-
-  function ContainsKeywords(const keywords: array of string; const sentence: string): Boolean;
-  var
-    keyword: string;
-  begin
-    Result := False;
-    for keyword in keywords do
-    begin
-      if Pos(keyword, sentence) > 0 then
-      begin
-        Result := True;
-        Break;
-      end;
-    end;
-  end;
-
 begin
-  keyword: string;
   words := sentence.Split([' ', '.', ',', '?', '!', ';', ':']);
 
-  // Keywords to check for
-  const
-    keyword: array[0..2] of string = ('Yesterday', 'Recently', 'Last week');
-
-  if ContainsKeywords(Keywords, sentence) then
+  for word in words do
   begin
-    for word in words do
-    begin
-      if IsVerbInPastTense(word) then
-        Writeln('Possible past tense error: "', word, '". Please check it!');
-    end;
+    if IsVerbInPastTense(word) or ContainsKeywords(sentence) then
+      Writeln('Possible tense error: "', word, '". Please check it!');
   end;
 end;
 
@@ -80,17 +95,26 @@ procedure Enhance;
 var
   inputStr: string;
   MyTime: TDateTime;
+  enhancedStr: string;
 begin
   Write('Input a sentence: ');
   Readln(inputStr);
   MyTime := Now;
+  Writeln();
+  Writeln('[Information of Sentence]');
   Writeln('Number of words:', CountWords(inputStr));
   Writeln('Number of sentences:', CountSentences(inputStr));
+  Writeln();
+  enhancedStr := FindAndSuggestReplace(inputStr);
+  if enhancedStr <> inputStr then
+    Writeln('Suggested replacement:', enhancedStr);
+  Writeln();
   CheckPastTenseErrors(inputStr);
-  Writeln('The Checking time is: ' + FormatDateTime('yyyy-mm-dd hh:nn', MyTime));
+  Writeln();
+  Writeln('[The Checking time is]: ' + FormatDateTime('[yyyy-mm-dd hh:nn]', MyTime));
 end;
 
 begin
   Enhance;
   Readln;
-end. 
+end.       
