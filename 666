@@ -3,12 +3,21 @@ program Enhancer;
 uses
   SysUtils, Types;
 
-//global variable
+// Global variable
 const
   Keywords: array[0..4] of string = ('Yesterday', 'recently', 'last week', 'last day', 'last month');
 
+procedure ReadInputFromFile(inputFile: string; var inputStr: string);
+var
+  InputFileText: TextFile;
+begin
+  AssignFile(InputFileText, inputFile);
+  Reset(InputFileText);
+  ReadLn(InputFileText, inputStr);
+  CloseFile(InputFileText);
+end;
 
-//counting the words
+// Counting the number of words
 function CountWords(const inputStr: string): Integer;
 var
   words: TStringArray;
@@ -24,9 +33,7 @@ begin
   end;
 end;
 
-
-
-//Counting the No. of sentence
+// Counting the number of sentences
 function CountSentences(const inputStr: string): Integer;
 var
   sentences: TStringArray;
@@ -42,14 +49,13 @@ begin
   end;
 end;
 
-
-
-//Array of 'ed' verb
+// Check if a verb is in past tense
 function IsVerbInPastTense(const verb: string): Boolean;
 begin
   Result := (Length(verb) >= 2) and (Copy(verb, Length(verb) - 1, 2) = 'ed');
 end;
 
+// Check if a sentence contains any keywords
 function ContainsKeywords(const sentence: string): Boolean;
 var
   keyword: string;
@@ -65,9 +71,7 @@ begin
   end;
 end;
 
-
-
-//replacement of common words
+// Replace common words with alternative suggestions
 function FindAndSuggestReplace(const inputStr: string): string;
 begin
   Result := StringReplace(inputStr, 'important', 'crucial', [rfIgnoreCase]);
@@ -75,8 +79,7 @@ begin
   Result := StringReplace(Result, 'useful', 'functional', [rfIgnoreCase]);
 end;
 
-
-
+// Check for past tense errors and keywords in a sentence
 procedure CheckPastTenseErrors(const sentence: string);
 var
   words: TStringArray;
@@ -91,25 +94,30 @@ begin
   end;
 end;
 
+// Main procedure to enhance the input sentence
 procedure Enhance;
 var
   inputStr: string;
   MyTime: TDateTime;
   enhancedStr: string;
 begin
-  Write('Input a sentence: ');
-  Readln(inputStr);
+  ReadInputFromFile('C:\Users\student\Desktop\hi.txt', inputStr);
   MyTime := Now;
+
   Writeln();
   Writeln('[Information of Sentence]');
   Writeln('Number of words:', CountWords(inputStr));
   Writeln('Number of sentences:', CountSentences(inputStr));
+
   Writeln();
+  Writeln('[Enhancer]');
   enhancedStr := FindAndSuggestReplace(inputStr);
   if enhancedStr <> inputStr then
     Writeln('Suggested replacement:', enhancedStr);
+
   Writeln();
   CheckPastTenseErrors(inputStr);
+
   Writeln();
   Writeln('[The Checking time is]: ' + FormatDateTime('[yyyy-mm-dd hh:nn]', MyTime));
 end;
@@ -117,4 +125,4 @@ end;
 begin
   Enhance;
   Readln;
-end.       
+end. 
